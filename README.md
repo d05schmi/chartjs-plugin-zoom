@@ -93,6 +93,16 @@ Examples for this plugin are available in the [samples folder](samples).
 
 Before submitting an issue or a pull request to the project, please take a moment to look over the [contributing guidelines](CONTRIBUTING.md) first.
 
+## Development
+
+To build the library use gulp:
+
+```bash
+npm run gulp -- build
+```
+
+For more options (watch, lint etc) see gulpfile.js
+
 ## License
 
 chartjs-plugin-zoom.js is available under the [MIT license](http://opensource.org/licenses/MIT).
