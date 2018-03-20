@@ -9,6 +9,9 @@
     "type": "git",
     "url": "https://github.com/chartjs/chartjs-plugin-zoom.git"
   },
+  "scripts": {
+    "gulp": "gulp"
+  },
   "devDependencies": {
     "browserify": "^13.0.0",
     "eslint": "^4.9.0",
