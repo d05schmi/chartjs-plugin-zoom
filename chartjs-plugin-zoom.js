@@ -44,6 +44,9 @@ var defaultOptions = zoomNS.defaults = {
 	}
 };
 
+// bugfix for line-chart pan with category as x axis
+var panLineIndexCounter = 0;
+
 function directionEnabled(mode, dir) {
 	if (mode === undefined) {
 		return true;
@@ -212,6 +215,36 @@ function doZoom(chartInstance, zoom, center, whichAxes) {
 	}
 }
 
+function panLineIndexScale(scale, delta, panOptions) {
+	panLineIndexCounter++;
+	if (Math.abs(delta) > 10 && panLineIndexCounter % 5 === 0) {
+		var labels = scale.chart.data.labels;
+		var lastLabelIndex = labels.length - 1;
+		var offsetAmt = Math.max((scale.ticks.length - ((scale.options.gridLines.offsetGridLines) ? 0 : 1)), 1);
+		var minIndex = scale.minIndex;
+		var maxIndex;
+
+		zoomNS.panCumulativeDelta += delta;
+
+		if (zoomNS.panCumulativeDelta > 0) {
+			minIndex = Math.max(0, minIndex - 1)
+		} else {
+			minIndex = Math.min(lastLabelIndex - offsetAmt + 1, minIndex + 1)
+		}
+
+		zoomNS.panCumulativeDelta = minIndex !== scale.minIndex ? 0 : zoomNS.panCumulativeDelta;
+
+		maxIndex = Math.min(lastLabelIndex, minIndex + offsetAmt);
+
+		var calcMin = rangeMinLimiter(panOptions, labels[minIndex]);
+		var calcMax = rangeMaxLimiter(panOptions, labels[maxIndex]);
+		if (calcMax - calcMin === scale.options.ticks.max - scale.options.ticks.min) {
+			scale.options.ticks.min = calcMin;
+			scale.options.ticks.max = calcMax;
+		}
+	}
+}
+
 function panIndexScale(scale, delta, panOptions) {
 	var labels = scale.chart.data.labels;
 	var lastLabelIndex = labels.length - 1;
@@ -259,8 +292,8 @@ function panNumericalScale(scale, delta, panOptions) {
 	tickOpts.max = rangeMaxLimiter(panOptions, tickOpts.max);
 }
 
-function panScale(scale, delta, panOptions) {
-	var fn = panFunctions[scale.options.type];
+function panScale(scale, delta, panOptions, chartType) {
+	var fn = panFunctions[chartType + scale.options.type] || panFunctions[scale.options.type];
 	if (fn) {
 		fn(scale, delta, panOptions);
 	}
@@ -275,10 +308,10 @@ function doPan(chartInstance, deltaX, deltaY) {
 		helpers.each(chartInstance.scales, function(scale, id) {
 			if (scale.isHorizontal() && directionEnabled(panMode, 'x') && deltaX !== 0) {
 				panOptions.scaleAxes = "x";
-				panScale(scale, deltaX, panOptions);
+				panScale(scale, deltaX, panOptions, chartInstance.chart.config.type);
 			} else if (!scale.isHorizontal() && directionEnabled(panMode, 'y') && deltaY !== 0) {
 				panOptions.scaleAxes = "y";
-				panScale(scale, deltaY, panOptions);
+				panScale(scale, deltaY, panOptions, chartInstance.chart.config.type);
 			}
 		});
 
@@ -308,6 +341,7 @@ zoomNS.zoomFunctions.category = zoomIndexScale;
 zoomNS.zoomFunctions.time = zoomTimeScale;
 zoomNS.zoomFunctions.linear = zoomNumericalScale;
 zoomNS.zoomFunctions.logarithmic = zoomNumericalScale;
+zoomNS.panFunctions.linecategory = panLineIndexScale;
 zoomNS.panFunctions.category = panIndexScale;
 zoomNS.panFunctions.time = panTimeScale;
 zoomNS.panFunctions.linear = panNumericalScale;
