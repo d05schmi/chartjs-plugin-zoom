@@ -370,6 +370,9 @@ var zoomPlugin = {
 			chartInstance.update();
 		};
 
+        chartInstance.doZoom = function(zoom, center, whichAxes) {
+        	doZoom(chartInstance, zoom, center, whichAxes);
+		};
 	},
 	beforeInit: function(chartInstance) {
 		chartInstance.zoom = {};
