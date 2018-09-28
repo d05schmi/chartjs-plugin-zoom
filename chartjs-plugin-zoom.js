@@ -472,6 +472,9 @@ var zoomPlugin = {
 			// Hammer reports the total scaling. We need the incremental amount
 			var currentPinchScaling;
 			var handlePinch = function handlePinch(e) {
+				if(e.srcEvent.ctrlKey) {
+					return;
+				}
 				var diff = 1 / (currentPinchScaling) * e.scale;
 				var rect = e.target.getBoundingClientRect();
 				var offsetX = e.center.x - rect.left;
@@ -507,10 +510,16 @@ var zoomPlugin = {
 			};
 
 			mc.on('pinchstart', function(e) {
+				if(e.srcEvent.ctrlKey) {
+					return;
+				}
 				currentPinchScaling = 1; // reset tracker
 			});
 			mc.on('pinch', handlePinch);
 			mc.on('pinchend', function(e) {
+				if(e.srcEvent.ctrlKey) {
+					return;
+				}
 				handlePinch(e);
 				currentPinchScaling = null; // reset
 				zoomNS.zoomCumulativeDelta = 0;
@@ -518,7 +527,9 @@ var zoomPlugin = {
 
 			var currentDeltaX = null, currentDeltaY = null, panning = false;
 			var handlePan = function handlePan(e) {
-				if (currentDeltaX !== null && currentDeltaY !== null) {
+				if(e.srcEvent.ctrlKey) {
+					return;
+				} else if (currentDeltaX !== null && currentDeltaY !== null) {
 					panning = true;
 					var deltaX = e.deltaX - currentDeltaX;
 					var deltaY = e.deltaY - currentDeltaY;
@@ -529,12 +540,18 @@ var zoomPlugin = {
 			};
 
 			mc.on('panstart', function(e) {
+				if(e.srcEvent.ctrlKey) {
+					return;
+				}
 				currentDeltaX = 0;
 				currentDeltaY = 0;
 				handlePan(e);
 			});
 			mc.on('panmove', handlePan);
 			mc.on('panend', function(e) {
+				if(e.srcEvent.ctrlKey) {
+					return;
+				}
 				currentDeltaX = null;
 				currentDeltaY = null;
 				zoomNS.panCumulativeDelta = 0;
